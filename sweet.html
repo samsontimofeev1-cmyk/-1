@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="ru" data-theme="mixed" data-font="courier">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Рецепт и сладости</title>
+
+  <script>
+    const appearanceKey = "recipes-and-sweets-appearance";
+    const defaultAppearance = { theme: "mixed", font: "courier" };
+    const themes = ["gold", "blue", "red", "green", "rainbow", "mixed"];
+    const fonts = ["georgia", "times", "arial", "verdana", "segoe", "courier"];
+
+    function readAppearance() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(appearanceKey));
+
+        return {
+          theme: themes.includes(saved?.theme) ? saved.theme : defaultAppearance.theme,
+          font: fonts.includes(saved?.font) ? saved.font : defaultAppearance.font
+        };
+      } catch {
+        return { ...defaultAppearance };
+      }
+    }
+
+    function applyAppearance({ theme, font }) {
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.dataset.font = font;
+    }
+
+    const initialAppearance = readAppearance();
+    applyAppearance(initialAppearance);
+  </script>
+
+  <style>
+    @property --hue {
+      syntax: "<number>";
+      inherits: true;
+      initial-value: 0;
+    }
+
+    :root {
+      color-scheme: dark;
+      --accent: #ffd36d;
+      --outline: linear-gradient(var(--accent), var(--accent));
+      --panel: #251c17;
+      --text: #fff9ef;
+      --muted: #ead9cc;
+      --font: Georgia, serif;
+      --border: 3px;
+      --radius: 24px;
+      --control-radius: 14px;
+    }
+
+    :root[data-theme="blue"] {
+      --accent: #84c9ff;
+    }
+
+    :root[data-theme="red"] {
+      --accent: #ff918c;
+    }
+
+    :root[data-theme="green"] {
+      --accent: #a9ec95;
+    }
+
+    :root[data-theme="rainbow"] {
+      --accent: hsl(var(--hue) 92% 74%);
+      animation: rainbow 10s linear infinite;
+    }
+
+    :root[data-theme="mixed"] {
+      --outline: linear-gradient(
+        120deg,
+        #ff7979,
+        #ffc479,
+        #ffe276,
+        #9fe391,
+        #7bc8ff,
+        #b19aff,
+        #ff8bd4
+      );
+    }
+
+    :root[data-font="times"] {
+      --font: "Times New Roman", serif;
+    }
+
+    :root[data-font="arial"] {
+      --font: Arial, sans-serif;
+    }
+
+    :root[data-font="verdana"] {
+      --font: Verdana, sans-serif;
+    }
+
+    :root[data-font="segoe"] {
+      --font: "Segoe UI", system-ui, sans-serif;
+    }
+
+    :root[data-font="courier"] {
+      --font: "Courier New", monospace;
+    }
+
+    @keyframes rainbow {
+      from {
+        --hue: 0;
+      }
+
+      to {
+        --hue: 360;
+      }
+    }
+
+    @keyframes open-window {
+      0% {
+        opacity: 0;
+        transform: scale(0.88);
+      }
+
+      43% {
+        opacity: 1;
+        transform: scale(1.045);
+      }
+
+      74% {
+        transform: scale(0.985);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes close-window {
+      to {
+        opacity: 0;
+        transform: scale(0.93);
+      }
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+      }
+    }
+
+    @keyframes fade-out {
+      to {
+        opacity: 0;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      isolation: isolate;
+      margin: 0;
+      min-height: 100vh;
+      background: #38271e;
+      color: var(--text);
+      font-family: var(--font);
+    }
+
+    body:has(dialog[open]) {
+      overflow: hidden;
+    }
+
+    .background {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .background img,
+    .background::after {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .background img {
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .background img.active {
+      opacity: 1;
+    }
+
+    .background::after {
+      content: "";
+      background: linear-gradient(
+        180deg,
+        rgb(21 14 10 / 57%),
+        rgb(21 14 10 / 72%)
+      );
+    }
+
+    .frame {
+      border: var(--border) solid transparent;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(var(--panel), var(--panel)) padding-box,
+        var(--outline) border-box;
+    }
+
+    button,
+    select {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+      cursor: pointer;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: flex-end;
+      padding: 1.25rem clamp(1rem, 4vw, 3rem);
+    }
+
+    .settings-button {
+      padding: 0.7rem 1rem;
+      border-radius: var(--control-radius);
+      box-shadow: 0 8px 22px rgb(0 0 0 / 30%);
+    }
+
+    .settings-button:hover,
+    .close:hover {
+      color: var(--accent);
+    }
+
+    main {
+      width: 100%;
+      margin: 0 auto;
+      padding: clamp(1rem, 4vw, 3rem) clamp(1rem, 4vw, 3rem) 4rem;
+    }
+
+    h1 {
+      width: fit-content;
+      max-width: 100%;
+      margin: 0 auto clamp(2rem, 5vw, 4rem);
+      padding: 0.25em 0.42em;
+      font-size: clamp(2.65rem, 9vw, 7.5rem);
+      line-height: 1.05;
+      text-align: center;
+      overflow-wrap: anywhere;
+      text-shadow: 0 0 22px color-mix(in srgb, var(--accent) 75%, transparent);
+      box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 52%, transparent);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem;
+    }
+
+    .card {
+      display: grid;
+      align-content: center;
+      gap: 0.4rem;
+      width: 100%;
+      min-height: 7rem;
+      padding: 1rem clamp(1.25rem, 4vw, 3rem);
+      border: var(--border) solid #917868;
+      border-radius: var(--radius);
+      background: var(--panel);
+      text-align: left;
+      transition: box-shadow 200ms ease, transform 200ms ease;
+    }
+
+    .card-title {
+      font-size: clamp(1.35rem, 3vw, 2rem);
+      font-weight: bold;
+      line-height: 1.15;
+    }
+
+    .card-description {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    @media (hover: hover) {
+      body:not(:has(dialog[open])) .card:not(.suppress-hover):hover {
+        border-color: transparent;
+        background:
+          linear-gradient(var(--panel), var(--panel)) padding-box,
+          var(--outline) border-box;
+        box-shadow: 0 0 26px color-mix(in srgb, var(--accent) 67%, transparent);
+        transform: translateY(-2px);
+      }
+    }
+
+    dialog {
+      position: fixed;
+      inset: 0;
+      width: min(42rem, calc(100% - 2rem));
+      height: fit-content;
+      max-height: 85vh;
+      max-height: 85dvh;
+      margin: auto;
+      padding: 0;
+      overflow: hidden;
+      color: var(--text);
+      box-shadow:
+        0 28px 74px rgb(0 0 0 / 55%),
+        0 0 30px color-mix(in srgb, var(--accent) 28%, transparent);
+    }
+
+    dialog[open] {
+      display: flex;
+      flex-direction: column;
+      animation: open-window 1s ease both;
+    }
+
+    dialog::backdrop {
+      background: rgb(14 9 7 / 73%);
+      animation: fade-in 300ms ease both;
+    }
+
+    dialog.closing {
+      animation: close-window 300ms ease both;
+      pointer-events: none;
+    }
+
+    dialog.closing::backdrop {
+      animation: fade-out 300ms ease both;
+    }
+
+    .window-header {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 2px solid #685344;
+    }
+
+    .window-header h2 {
+      min-width: 0;
+      margin: 0;
+      font-size: clamp(1.25rem, 5vw, 2rem);
+      overflow-wrap: anywhere;
+    }
+
+    .window-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .recipe-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.6rem;
+      border: var(--border) solid #917868;
+      border-radius: var(--control-radius);
+      background: #342820;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .recipe-switch select {
+      width: auto;
+      min-width: 125px;
+      padding: 0.2rem 1.55rem 0.2rem 0.35rem;
+      border: 1px solid #917868;
+      border-radius: 8px;
+      background-color: #1e1611;
+      color: #fff9ef;
+      cursor: pointer;
+    }
+
+    .recipe-switch select option {
+      background-color: #1e1611;
+      color: #fff9ef;
+    }
+
+    .recipe-switch select:focus {
+      border-color: var(--accent);
+    }
+
+    .close {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 2.75rem;
+      height: 2.75rem;
+      padding: 0;
+      border-radius: 12px;
+      font: 1.65rem/1 system-ui, sans-serif;
+    }
+
+    .window-body {
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0 1.25rem 1.25rem;
+      line-height: 1.65;
+    }
+
+    .window-body li + li {
+      margin-top: 0.55rem;
+    }
+
+    .window-body a {
+      color: var(--accent);
+    }
+
+    .recipe-time {
+      padding: 0.85rem 1rem;
+      border: var(--border) solid #917868;
+      border-radius: var(--control-radius);
+      background: #342820;
+    }
+
+    #settings {
+      width: min(29rem, calc(100% - 2rem));
+    }
+
+    .settings-fields {
+      display: grid;
+      gap: 1.1rem;
+      padding-top: 1.25rem;
+    }
+
+    .settings-fields label {
+      display: grid;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+
+    .settings-fields select {
+      width: 100%;
+      min-width: 0;
+      padding: 0.65rem 0.75rem;
+      border: var(--border) solid #917868;
+      border-radius: var(--control-radius);
+      background-color: #342820;
+      color: #fff9ef;
+    }
+
+    .settings-fields select option {
+      background-color: #1e1611;
+      color: #fff9ef;
+    }
+
+    @media (max-width: 560px) {
+      .window-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .window-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .recipe-switch {
+        flex: 1;
+        justify-content: space-between;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :root[data-theme="rainbow"],
+      dialog[open],
+      dialog[open]::backdrop {
+        animation: none;
+      }
+
+      .background img,
+      .card {
+        transition: none;
+      }
+
+      body:not(:has(dialog[open])) .card:not(.suppress-hover):hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="background" aria-hidden="true">
+    <img class="active" src="image/1.png" alt="">
+    <img src="image/2.png" alt="">
+    <img src="image/3.png" alt="">
+  </div>
+
+  <header class="top">
+    <button class="settings-button frame" id="open-settings"
+            type="button" aria-haspopup="dialog">
+      <span aria-hidden="true">⚙</span> Настройки
+    </button>
+  </header>
+
+  <main>
+    <h1 class="frame">Рецепт и сладости</h1>
+
+    <section class="cards" aria-label="Рецепты сладостей">
+      <button class="card" type="button" data-recipe="lollipops"
+              aria-haspopup="dialog">
+        <span class="card-title">Леденцы</span>
+        <span class="card-description">Сахарная карамель на палочках.</span>
+      </button>
+
+      <button class="card" type="button" data-recipe="banana"
+              aria-haspopup="dialog">
+        <span class="card-title">Банановое мороженое</span>
+        <span class="card-description">Холодный десерт из бананов.</span>
+      </button>
+
+      <button class="card" type="button" data-recipe="shortbread"
+              aria-haspopup="dialog">
+        <span class="card-title">Песочное печенье</span>
+        <span class="card-description">Рассыпчатое сливочное печенье.</span>
+      </button>
+    </section>
+  </main>
+
+  <dialog id="recipe" class="frame" aria-labelledby="recipe-title">
+    <header class="window-header">
+      <h2 id="recipe-title"></h2>
+
+      <div class="window-actions">
+        <label class="recipe-switch">
+          Рецепты
+          <select id="recipe-mode" aria-label="Выбор варианта рецепта">
+            <option value="standard">Обычный</option>
+            <option value="simple">Упрощённый</option>
+          </select>
+        </label>
+
+        <button class="close frame" type="button" data-close
+                aria-label="Закрыть рецепт" autofocus>×</button>
+      </div>
+    </header>
+
+    <div class="window-body" id="recipe-body" tabindex="0"
+         role="region" aria-label="Текст рецепта"></div>
+  </dialog>
+
+  <dialog id="settings" class="frame" aria-labelledby="settings-title">
+    <header class="window-header">
+      <h2 id="settings-title">Настройки</h2>
+
+      <div class="window-actions">
+        <button class="close frame" type="button" data-close
+                aria-label="Закрыть настройки">×</button>
+      </div>
+    </header>
+
+    <div class="window-body settings-fields">
+      <label>
+        Тема
+        <select id="theme" autofocus>
+          <option value="gold">Золотая</option>
+          <option value="blue">Синяя</option>
+          <option value="red">Красная</option>
+          <option value="green">Зелёная</option>
+          <option value="rainbow">Радужная</option>
+          <option value="mixed" selected>Смешанные цвета</option>
+        </select>
+      </label>
+
+      <label>
+        Шрифт
+        <select id="font">
+          <option value="georgia">Georgia — классический</option>
+          <option value="times">Times New Roman — книжный</option>
+          <option value="arial">Arial — простой</option>
+          <option value="verdana">Verdana — широкий</option>
+          <option value="segoe">Segoe UI — современный</option>
+          <option value="courier" selected>Courier New — печатная машинка</option>
+        </select>
+      </label>
+    </div>
+  </dialog>
+
+  <template id="lollipops-standard">
+    <p class="recipe-time">
+      <strong>Время.</strong> Подготовка занимает около 10 минут.
+      Сироп готов при температуре <strong>149 °C</strong>.
+      После разлива леденцам нужно полностью остыть.
+    </p>
+
+    <h3>Ингредиенты</h3>
+    <ul>
+      <li>400 г сахара</li>
+      <li>220 г светлого кукурузного сиропа</li>
+      <li>180 мл воды</li>
+      <li>4 г концентрированного ароматизатора для карамели</li>
+      <li>2 г нейтрального растительного масла для форм</li>
+    </ul>
+
+    <p>Понадобятся кастрюля с толстым дном, кондитерский термометр,
+      жаростойкие формы и палочки для леденцов.</p>
+
+    <h3>Приготовление</h3>
+    <ol>
+      <li><strong>Подготовь формы.</strong> Слегка смажь формы маслом.
+        Отмерь продукты и положи палочки рядом.</li>
+      <li><strong>Раствори сахар.</strong> Смешай сахар, кукурузный сироп
+        и воду. Нагревай на среднем огне, помешивая, пока сахар полностью
+        не растворится.</li>
+      <li><strong>Увари до 149 °C.</strong> После закипания не перемешивай
+        сироп. Термометр не должен касаться дна кастрюли. При достижении
+        149 °C сразу сними кастрюлю с огня.</li>
+      <li><strong>Добавь аромат и разлей.</strong> Дождись, пока кипение
+        немного утихнет. Добавь ароматизатор, перемешай и разлей сироп
+        по формам. Вставь палочки.</li>
+      <li><strong>Остуди.</strong> Оставь формы при комнатной температуре
+        до полного затвердевания карамели.</li>
+    </ol>
+
+    <h3>Что делать, если…</h3>
+    <ul>
+      <li><strong>Леденцы мягкие.</strong> Сироп не дошёл до 149 °C.
+        В следующий раз проверь температуру термометром.</li>
+      <li><strong>Карамель крупинчатая.</strong> Сахар мог
+        закристаллизоваться. Полностью раствори сахар до кипения
+        и не перемешивай сироп после закипания.</li>
+      <li><strong>Леденцы липнут.</strong> Храни полностью остывшие
+        леденцы в сухом герметичном контейнере.</li>
+    </ul>
+  </template>
+
+  <template id="lollipops-simple">
+    <p class="recipe-time">
+      <strong>Время.</strong> Подготовка занимает около 5 минут.
+      Варка длится примерно 10–15 минут. Леденцы остывают около 30 минут.
+    </p>
+
+    <h3>Ингредиенты</h3>
+    <ul>
+      <li>250 г сахара</li>
+      <li>80 мл воды</li>
+      <li>10 мл лимонного сока</li>
+      <li>5 мл ванильного сиропа или пищевого ароматизатора по желанию</li>
+    </ul>
+
+    <p>Понадобятся небольшая кастрюля, лист пергамента и палочки.
+      Формы для леденцов не обязательны.</p>
+
+    <h3>Приготовление</h3>
+    <ol>
+      <li><strong>Подготовь поверхность.</strong> Положи пергамент на
+        противень или доску. Разложи палочки на расстоянии друг от друга.</li>
+      <li><strong>Свари карамель.</strong> Смешай сахар, воду и лимонный
+        сок. Нагревай на среднем огне, пока сахар растворится. После
+        закипания не перемешивай.</li>
+      <li><strong>Проверь готовность.</strong> Когда сироп станет
+        светло-золотистым, капни немного в холодную воду. Если капля
+        быстро затвердевает и ломается, карамель готова.</li>
+      <li><strong>Сформируй леденцы.</strong> Сними кастрюлю с огня.
+        Добавь ароматизатор. Выложи небольшие круги карамели на пергамент
+        и положи в каждый круг палочку.</li>
+      <li><strong>Остуди.</strong> Оставь леденцы на 30 минут. Когда они
+        станут твёрдыми, аккуратно сними их с пергамента.</li>
+    </ol>
+
+    <h3>Что делать, если…</h3>
+    <ul>
+      <li><strong>Карамель горчит.</strong> Огонь был слишком сильным.
+        Используй средний нагрев и проверяй сироп в холодной воде раньше.</li>
+      <li><strong>Леденцы растекаются.</strong> Карамель недостаточно
+        уварилась. Прогрей её ещё немного и повтори проверку.</li>
+      <li><strong>Палочки двигаются.</strong> Вставляй их сразу после
+        разлива карамели, пока она ещё мягкая.</li>
+    </ul>
+  </template>
+
+  <template id="banana-standard">
+    <p class="recipe-time">
+      <strong>Время.</strong> Подготовка занимает около 5 минут.
+      Бананы замораживаются минимум 2 часа. Для плотного мороженого
+      понадобится ещё несколько часов в морозилке.
+    </p>
+
+    <h3>Ингредиенты</h3>
+    <ul>
+      <li>240 г очищенных спелых бананов</li>
+      <li>10 г какао-порошка по желанию</li>
+      <li>20 мл жидкого мёда по желанию</li>
+      <li>30 г ореховой пасты по желанию</li>
+    </ul>
+
+    <p>Понадобится кухонный комбайн или блендер для замороженных продуктов.</p>
+
+    <h3>Приготовление</h3>
+    <ol>
+      <li><strong>Нарежь бананы.</strong> Очисти бананы и нарежь
+        небольшими одинаковыми кусочками.</li>
+      <li><strong>Заморозь.</strong> Разложи кусочки в один слой
+        и замораживай минимум 2 часа.</li>
+      <li><strong>Измельчи.</strong> Переложи бананы в чашу и измельчи
+        до мелкой крошки.</li>
+      <li><strong>Взбей до кремовой текстуры.</strong> Взбивай короткими
+        подходами. Между ними снимай массу со стенок. Когда масса станет
+        гладкой, добавь какао, мёд или ореховую пасту.</li>
+      <li><strong>Подавай.</strong> Для мягкого десерта подавай сразу.
+        Для плотного мороженого убери в морозилку.</li>
+    </ol>
+
+    <h3>Что делать, если…</h3>
+    <ul>
+      <li><strong>Масса остаётся крошкой.</strong> Собери бананы со стенок
+        чаши и взбей ещё короткими подходами.</li>
+      <li><strong>Ножи застревают.</strong> Выключи прибор, раздели
+        смерзшиеся кусочки и измельчай меньшей порцией.</li>
+      <li><strong>Мороженое слишком мягкое.</strong> Убери его
+        в морозилку в закрытом контейнере.</li>
+    </ul>
+  </template>
+
+  <template id="banana-simple">
+    <p class="recipe-time">
+      <strong>Время.</strong> Подготовка занимает около 5 минут.
+      Бананы замораживаются минимум 2 часа. Приготовление занимает
+      ещё около 5 минут.
+    </p>
+
+    <h3>Ингредиенты</h3>
+    <ul>
+      <li>240 г очищенных спелых бананов</li>
+      <li>20 мл молока или растительного напитка при необходимости</li>
+    </ul>
+
+    <p>Подойдёт обычный домашний блендер. Молоко добавляй только тогда,
+      когда блендеру тяжело измельчать бананы.</p>
+
+    <h3>Приготовление</h3>
+    <ol>
+      <li><strong>Нарежь и заморозь бананы.</strong> Нарежь бананы
+        кружочками, разложи на тарелке в один слой и замораживай
+        минимум 2 часа.</li>
+      <li><strong>Переложи в блендер.</strong> Дай замороженным бананам
+        полежать 3–5 минут, чтобы кусочки легче отделялись.</li>
+      <li><strong>Измельчи.</strong> Включай блендер короткими
+        включениями. Останавливай его и снимай массу со стенок.</li>
+      <li><strong>Добавь жидкость при необходимости.</strong> Если ножи
+        не справляются, добавь немного молока. Не вливай все 20 мл сразу.</li>
+      <li><strong>Подавай.</strong> Когда масса станет похожа на густой
+        крем, разложи её по креманкам.</li>
+    </ol>
+
+    <h3>Что делать, если…</h3>
+    <ul>
+      <li><strong>Блендер не справляется.</strong> Дай бананам немного
+        отойти и измельчай небольшими порциями.</li>
+      <li><strong>Мороженое жидкое.</strong> Переложи массу в контейнер
+        и заморозь до нужной плотности.</li>
+      <li><strong>Масса слишком твёрдая.</strong> Дай ей постоять 5 минут
+        при комнатной температуре.</li>
+    </ul>
+  </template>
+
+  <template id="shortbread-standard">
+    <p class="recipe-time">
+      <strong>Время.</strong> Подготовка занимает около 15 минут.
+      Выпечка длится 35–40 минут. Затем оставь корж в форме на
+      5–10 минут и полностью остуди.
+    </p>
+
+    <h3>Ингредиенты</h3>
+    <ul>
+      <li>227 г мягкого солёного сливочного масла</li>
+      <li>113 г сахарной пудры</li>
+      <li>240 г пшеничной муки</li>
+      <li>10 мл ванильного экстракта</li>
+      <li>1 г мелкой соли</li>
+      <li>15 мл воды, если тесто не собирается</li>
+    </ul>
+
+    <h3>Приготовление</h3>
+    <ol>
+      <li><strong>Разогрей духовку до 165 °C.</strong> Подготовь круглую
+        форму диаметром 23 см или квадратную 20 × 20 см.</li>
+      <li><strong>Замеси тесто.</strong> Взбей масло с сахарной пудрой,
+        ванилью и солью. Добавь муку и перемешай до плотного теста.</li>
+      <li><strong>Сформируй корж.</strong> Распредели тесто по форме
+        и проколи вилкой по всей поверхности.</li>
+      <li><strong>Выпекай.</strong> Выпекай 35–40 минут. Верх должен
+        стать светло-золотистым, а края немного темнее.</li>
+      <li><strong>Остуди и нарежь.</strong> Оставь корж в форме на
+        5–10 минут. Нарежь тёплым и затем полностью остуди.</li>
+    </ol>
+
+    <h3>Что делать, если…</h3>
+    <ul>
+      <li><strong>Тесто рассыпается.</strong> Добавляй воду маленькими
+        порциями, пока тесто не начнёт собираться.</li>
+      <li><strong>Края темнеют.</strong> Проверь ровность слоя теста
+        и начинай проверять готовность раньше.</li>
+      <li><strong>Корж трескается при нарезке.</strong> Нарезай его,
+        пока он ещё тёплый.</li>
+    </ul>
+  </template>
+
+  <template id="shortbread-simple">
+    <p class="recipe-time">
+      <strong>Время.</strong> Подготовка занимает около 10 минут.
+      Выпечка длится 25–30 минут. Печенье остывает около 20 минут.
+    </p>
+
+    <h3>Ингредиенты</h3>
+    <ul>
+      <li>180 г сливочного масла</li>
+      <li>80 г сахара</li>
+      <li>260 г пшеничной муки</li>
+      <li>5 мл ванильного экстракта по желанию</li>
+      <li>1 г соли</li>
+    </ul>
+
+    <p>Подойдут обычная миска, противень и пергамент. Форма для выпечки
+      не нужна.</p>
+
+    <h3>Приготовление</h3>
+    <ol>
+      <li><strong>Разогрей духовку до 170 °C.</strong> Застели противень
+        пергаментом. Масло должно быть мягким.</li>
+      <li><strong>Смешай масло и сахар.</strong> Разотри мягкое масло
+        с сахаром, ванилью и солью до однородности.</li>
+      <li><strong>Добавь муку.</strong> Добавляй муку постепенно и замеси
+        мягкое тесто. Скатай небольшие шарики и слегка прижми их
+        на противне.</li>
+      <li><strong>Выпекай.</strong> Выпекай 25–30 минут. Печенье готово,
+        когда его края стали светло-золотистыми.</li>
+      <li><strong>Остуди.</strong> Оставь печенье на противне на 10 минут,
+        затем перенеси на тарелку или решётку.</li>
+    </ol>
+
+    <h3>Что делать, если…</h3>
+    <ul>
+      <li><strong>Тесто липнет.</strong> Убери его в холодильник
+        на 15 минут или добавь немного муки.</li>
+      <li><strong>Печенье растеклось.</strong> Перед выпечкой поставь
+        сформированные заготовки в холодильник на 10–15 минут.</li>
+      <li><strong>Печенье слишком твёрдое.</strong> Доставай его, когда
+        края уже золотистые, а середина ещё выглядит мягкой.</li>
+    </ul>
+  </template>
+
+  <script>
+    const slides = document.querySelectorAll(".background img");
+    let activeSlide = 0;
+
+    setInterval(() => {
+      slides[activeSlide].classList.remove("active");
+      activeSlide = (activeSlide + 1) % slides.length;
+      slides[activeSlide].classList.add("active");
+    }, 20000);
+
+    const themeSelect = document.querySelector("#theme");
+    const fontSelect = document.querySelector("#font");
+
+    themeSelect.value = initialAppearance.theme;
+    fontSelect.value = initialAppearance.font;
+
+    function saveAppearance() {
+      const appearance = {
+        theme: themeSelect.value,
+        font: fontSelect.value
+      };
+
+      applyAppearance(appearance);
+
+      try {
+        localStorage.setItem(appearanceKey, JSON.stringify(appearance));
+      } catch {
+        // Выбор будет работать до закрытия страницы.
+      }
+    }
+
+    themeSelect.addEventListener("change", saveAppearance);
+    fontSelect.addEventListener("change", saveAppearance);
+
+    const recipeDialog = document.querySelector("#recipe");
+    const settingsDialog = document.querySelector("#settings");
+    const recipeTitle = document.querySelector("#recipe-title");
+    const recipeBody = document.querySelector("#recipe-body");
+    const recipeMode = document.querySelector("#recipe-mode");
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+    let activeRecipe = "";
+
+    function showRecipeVariant() {
+      const templateId = `${activeRecipe}-${recipeMode.value}`;
+      const template = document.getElementById(templateId);
+
+      if (!template) {
+        return;
+      }
+
+      recipeBody.replaceChildren(template.content.cloneNode(true));
+      recipeBody.scrollTop = 0;
+    }
+
+    document.querySelector("#open-settings").addEventListener("click", () => {
+      settingsDialog.showModal();
+    });
+
+    recipeMode.addEventListener("change", showRecipeVariant);
+
+    document.querySelectorAll(".card").forEach((card) => {
+      card.addEventListener("pointermove", () => {
+        if (!recipeDialog.open) {
+          card.classList.remove("suppress-hover");
+        }
+      });
+
+      card.addEventListener("click", () => {
+        activeRecipe = card.dataset.recipe;
+        recipeMode.value = "standard";
+        recipeTitle.textContent = card.querySelector(".card-title").textContent;
+
+        showRecipeVariant();
+
+        card.classList.add("suppress-hover");
+        recipeDialog.showModal();
+      });
+    });
+
+    async function closeDialog(dialog) {
+      if (!dialog.open || dialog.classList.contains("closing")) {
+        return;
+      }
+
+      if (!reducedMotion.matches) {
+        dialog.classList.add("closing");
+
+        const animation = dialog.getAnimations().find(
+          (item) => item.animationName === "close-window"
+        );
+
+        if (animation) {
+          await animation.finished.catch(() => {});
+        }
+      }
+
+      dialog.close();
+      dialog.classList.remove("closing");
+    }
+
+    function isOutside(event, dialog) {
+      if (event.target !== dialog) {
+        return false;
+      }
+
+      const bounds = dialog.getBoundingClientRect();
+
+      return event.clientX < bounds.left
+        || event.clientX > bounds.right
+        || event.clientY < bounds.top
+        || event.clientY > bounds.bottom;
+    }
+
+    document.querySelectorAll("dialog").forEach((dialog) => {
+      let startedOutside = false;
+
+      dialog.querySelector("[data-close]").addEventListener("click", () => {
+        closeDialog(dialog);
+      });
+
+      dialog.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        closeDialog(dialog);
+      });
+
+      dialog.addEventListener("pointerdown", (event) => {
+        startedOutside = isOutside(event, dialog);
+      });
+
+      dialog.addEventListener("pointercancel", () => {
+        startedOutside = false;
+      });
+
+      dialog.addEventListener("click", (event) => {
+        if (startedOutside && isOutside(event, dialog)) {
+          closeDialog(dialog);
+        }
+
+        startedOutside = false;
+      });
+    });
+  </script>
+</body>
+</html>
